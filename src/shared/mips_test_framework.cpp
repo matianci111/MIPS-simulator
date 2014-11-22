@@ -1,9 +1,9 @@
 /* This file is an implementation of the functions
- defined in mips_test.h. It is designed to be
- linked against something which implements the
- functions from mips_cpu.h and mips_mem.h, plus
- some sort of main program to run the tests.
- */
+   defined in mips_test.h. It is designed to be
+   linked against something which implements the
+   functions from mips_cpu.h and mips_mem.h, plus
+   some sort of main program to run the tests.
+*/
 #include "mips_test.h"
 
 #include <map>
@@ -11,7 +11,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
-#include <string>
+#include <string> 
 
 static bool sg_started=false;
 
@@ -101,7 +101,7 @@ extern "C" void mips_test_begin_suite()
     
     sg_started=true;
 }
-
+  
 extern "C" int mips_test_begin_test(const char *instruction)
 {
     if(!sg_started){
@@ -151,7 +151,7 @@ extern "C" void mips_test_end_test(int testId, int passed, const char *msg)
     }
     if(sg_tests.back().status!=-1){
         fprintf(stderr, "Error:mips_test_finish_test - Attempt to finish test %u, but it already finished with status %u.\n", testId, sg_tests.back().status);
-        exit(1);
+        exit(1);  
     }
     
     sg_tests.back().status=passed ? 1 : 0;
@@ -215,7 +215,7 @@ extern "C" void mips_test_end_suite()
         }else{
             totalFullyWorking++;
         }
-        
+            
         fprintf(stderr, "|%12s |   %4u |   %4u |  %5.1lf%% |\n", name.c_str(), total, passed, 100.0*passed/(double)total);
         
         if(sg_knownInstructions.find(name)==sg_knownInstructions.end()){
@@ -224,8 +224,8 @@ extern "C" void mips_test_end_suite()
         
         ++it;
     }
-    
-    fprintf(stderr, "+-------------+--------+--------+---------+\n");
+   
+    fprintf(stderr, "+-------------+--------+--------+---------+\n"); 
     fprintf(stderr, "\n");
     fprintf(stderr, "Total instructions tested: %3u\n", totalTested);
     fprintf(stderr, "Fully working :            %3u (%5.1lf%%)\n", totalFullyWorking, 100.0*totalFullyWorking/(double)totalTested);

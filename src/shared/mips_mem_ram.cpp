@@ -108,6 +108,5 @@ void mips_mem_free(mips_mem_h mem)
 		free(mem->data);
 		mem->data=0;
 		free(mem);
-        mem = 0;
 	}
 }

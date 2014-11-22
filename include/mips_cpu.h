@@ -77,8 +77,14 @@ mips_error mips_cpu_set_pc(
 	uint32_t pc			//!< Address of the next instruction to exectute.
 );
 
-/*! Gets the pc for the next instruction. */
-mips_error mips_cpu_get_pc(mips_cpu_h state, uint32_t *pc);
+/*! Gets the pc for the next instruction.
+	
+	Returns the program counter for the next instruction to be executed.
+*/
+mips_error mips_cpu_get_pc(
+	mips_cpu_h state,	//!< Valid (non-empty) handle to a CPU
+	uint32_t *pc		//!< Where to write the byte address too
+);
 
 /*! Advances the processor by one instruction.
 
@@ -87,10 +93,12 @@ mips_error mips_cpu_get_pc(mips_cpu_h state, uint32_t *pc);
 	inspect what happened and find out what went wrong. So
 	this should be true:
 	
-		uint32_t pc=mips_cpu_get_pc(cpu);
+		uint32_t pcOrig, pcGot;
+		mips_cpu_get_pc(cpu, &pcOrig);
 		mips_error err=mips_cpu_step(cpu);
 		if(err!=mips_Success){
-			assert(mips_cpu_get_pc(cpu)==pc);
+			mips_cpu_get_pc(cpu, &pcGot);
+			assert(pcOrig==pcGot);
 			assert(mips_cpu_step(cpu)==err);
 	    }
 	
@@ -98,7 +106,9 @@ mips_error mips_cpu_get_pc(mips_cpu_h state, uint32_t *pc);
 	difficult, so _try_ to maintain it, but don't worry too
 	much if under some exceptions it doesn't quite work.
 */
-mips_error mips_cpu_step(mips_cpu_h state);
+mips_error mips_cpu_step(
+	mips_cpu_h state	//! Valid (non-empty) handle to a CPU
+);
 
 /*! Controls printing of diagnostic and debug messages.
 
@@ -136,6 +146,44 @@ mips_error mips_cpu_step(mips_cpu_h state);
 	However, this is completely implementation defined behaviour,
 	so your simulator does not have to print anything for
 	any debug level if you don't want to. 
+	
+	The intent is that this function merely modifies the type
+	of reporting that is performed during mips_cpu_step:
+	
+		// Enable basic debugging to stderr
+		mips_cpu_set_debug_level(cpu, 1, stderr);
+		
+		// The implementation may now choose to print things
+		// to stderr (what exactly is up to the implementation)
+		mips_cpu_step(cpu);	// e.g. prints "pc = 0x12, encoding=R"
+		
+		// Tell the CPU to print nothing
+		mips_cpu_set_debug_level(cpu, 0, NULL);
+		
+		// Now the implementation must not print any debug information
+		mips_cpu_step(cpu);
+		
+		// Send detailed debug output to a text file
+		FILE *dump=fopen("dump.txt", "wt");
+		mips_cpu_set_debug_level(cpu, 2, dump);
+		
+		// Run lots of instructions until the CPU reports an error.
+		// The implementation can write lots of useful information to
+		// the file
+		mips_error err=mips_Success;
+		while(!err) {
+			mips_cpu_step(cpu);
+		};
+		
+		// Detach the text file, and close it
+		mips_cpu_set_debug_level(cpu, 0, NULL);
+		fclose(dump);
+		
+		// You can now read through the text file "dump.txt" to see what happened
+
+	However, you could decide that you want to print something out
+	at the point that mips_cpu_set_debug_level is called with level>0,
+	such as the current PC and registers. Up to you.
 */
 mips_error mips_cpu_set_debug_level(mips_cpu_h state, unsigned level, FILE *dest);
 
